@@ -904,7 +904,7 @@ interface_alloc(const char *name, struct blob_attr *config, bool dynamic)
 
 	if ((cur = tb[IFACE_ATTR_NETNS])) {
 		const char *netns = blobmsg_data(cur);
-		netifd_log_message(L_CRIT, "Got netns: %s (name)\n", netns, name);
+		netifd_log_message(L_CRIT, "Got netns: %s (%s)\n", netns, name);
 	}
 
 	if ((cur = tb[IFACE_ATTR_IP4TABLE])) {
