@@ -54,6 +54,7 @@ enum {
 	IFACE_ATTR_IP6IFACEID,
 	IFACE_ATTR_FORCE_LINK,
 	IFACE_ATTR_IP6WEIGHT,
+	IFACE_ATTR_NETNS,
 	IFACE_ATTR_MAX
 };
 
@@ -82,6 +83,7 @@ static const struct blobmsg_policy iface_attrs[IFACE_ATTR_MAX] = {
 	[IFACE_ATTR_IP6IFACEID] = { .name = "ip6ifaceid", .type = BLOBMSG_TYPE_STRING },
 	[IFACE_ATTR_FORCE_LINK] = { .name = "force_link", .type = BLOBMSG_TYPE_BOOL },
 	[IFACE_ATTR_IP6WEIGHT] = { .name = "ip6weight", .type = BLOBMSG_TYPE_INT32 },
+	[IFACE_ATTR_NETNS] = { .name= "netns", .type = BLOBMSG_TYPE_STRING }
 };
 
 const struct uci_blob_param_list interface_attr_list = {
@@ -899,6 +901,11 @@ interface_alloc(const char *name, struct blob_attr *config, bool dynamic)
 
 	if ((cur = tb[IFACE_ATTR_IP6WEIGHT]))
 		iface->assignment_weight = blobmsg_get_u32(cur);
+
+	if ((cur = tb[IFACE_ATTR_NETNS])) {
+		const char *netns = blobmsg_data(cur);
+		netifd_log_message(L_CRIT, "Got netns: %s (name)\n", netns, name);
+	}
 
 	if ((cur = tb[IFACE_ATTR_IP4TABLE])) {
 		if (!system_resolve_rt_table(blobmsg_data(cur), &iface->ip4table))
