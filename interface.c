@@ -903,8 +903,9 @@ interface_alloc(const char *name, struct blob_attr *config, bool dynamic)
 		iface->assignment_weight = blobmsg_get_u32(cur);
 
 	if ((cur = tb[IFACE_ATTR_NETNS])) {
-		const char *netns = blobmsg_data(cur);
+		const char *netns = blobmsg_get_string(cur);
 		netifd_log_message(L_CRIT, "Got netns: %s (%s)\n", netns, name);
+
 	}
 
 	if ((cur = tb[IFACE_ATTR_IP4TABLE])) {
