@@ -1563,20 +1563,6 @@ int system_netns_del(char *nsname)
 }
 #endif
 
-int system_netns_open(const pid_t target_ns)
-{
-	char pid_net_path[PATH_MAX];
-
-	snprintf(pid_net_path, sizeof(pid_net_path), "/proc/%u/ns/net", target_ns);
-
-	return open(pid_net_path, O_RDONLY);
-}
-
-int system_netns_set(int netns_fd)
-{
-	return setns(netns_fd, CLONE_NEWNET);
-}
-
 int system_veth_add(struct device *veth, struct veth_config *cfg)
 {
 	struct nl_msg *msg;
