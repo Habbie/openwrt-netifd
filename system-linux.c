@@ -60,6 +60,8 @@
 #define IFA_FLAGS (IFA_MULTICAST + 1)
 #endif
 
+#define NETNS_RUN_DIR "/var/run/netns"
+
 #include <string.h>
 #include <fcntl.h>
 #include <glob.h>
@@ -1535,6 +1537,31 @@ int system_macvlan_del(struct device *macvlan)
 {
 	return system_link_del(macvlan->ifname);
 }
+
+#if 0
+int system_netns_add(char *nsname)
+{
+	char netns_path[PATH_MAX];
+
+	snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, nsname);
+
+	if (mkdir(NETNS_RUN_DIR, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) {
+		if (errno != EEXIST) {
+			// FIXME: report
+			return -1;
+		}
+	}
+
+    // I went with simpler code (without locking) than iproute2's netns_add() here.
+    // See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=949235 for possible reasons I'm wrong.
+
+}
+
+int system_netns_del(char *nsname)
+{
+
+}
+#endif
 
 int system_netns_open(const pid_t target_ns)
 {
