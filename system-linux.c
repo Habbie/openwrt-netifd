@@ -1566,9 +1566,6 @@ int system_netns_add(const char *name)
 	 * a new mount namespace and bind them into a well known
 	 * location in the filesystem based on the name provided.
 	 *
-	 * If create is true, a new namespace will be created,
-	 * otherwise an existing one will be attached to the file.
-	 *
 	 * The mount namespace is created so that any necessary
 	 * userspace tweaks like remounting /sys, or bind mounting
 	 * a new /etc/resolv.conf can be shared between users.
@@ -1648,18 +1645,14 @@ int system_netns_add(const char *name)
 	}
 	close(fd);
 
-	if (create) {
-		netns_save();
-		if (unshare(CLONE_NEWNET) < 0) {
-			D(SYSTEM, "Failed to create a new network namespace \"%s\": %s\n",
-				name, strerror(errno));
-			goto out_delete;
-		}
-
-		strcpy(proc_path, "/proc/self/ns/net");
-	} else {
-		snprintf(proc_path, sizeof(proc_path), "/proc/%d/ns/net", pid);
+	netns_save();
+	if (unshare(CLONE_NEWNET) < 0) {
+		D(SYSTEM, "Failed to create a new network namespace \"%s\": %s\n",
+			name, strerror(errno));
+		goto out_delete;
 	}
+
+	strcpy(proc_path, "/proc/self/ns/net");
 
 	/* Bind the netns last so I can watch for it */
 	if (mount(proc_path, netns_path, "none", MS_BIND, NULL) < 0) {
@@ -1671,13 +1664,8 @@ int system_netns_add(const char *name)
 
 	return 0;
 out_delete:
-	if (create) {
-		netns_restore();
-		netns_delete(argc, argv);
-	} else if (unlink(netns_path) < 0) {
-		D(SYSTEM, "Cannot remove namespace file \"%s\": %s\n",
-			netns_path, strerror(errno));
-	}
+	netns_restore();
+	netns_delete(argc, argv);
 	return -1;
 }
     // END code taken from iproute2 ipnetns.c
