@@ -310,6 +310,7 @@ void system_fd_set_cloexec(int fd);
 
 int system_update_ipv6_mtu(struct device *dev, int mtu);
 
+int system_netns_add(char *name);
 int system_link_netns_move(struct device *dev, const pid_t target_ns, const char *target_ifname);
 
 #endif
