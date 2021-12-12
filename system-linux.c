@@ -22,6 +22,8 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#include <sys/file.h>
+#include <sys/mount.h>
 
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -1556,11 +1558,9 @@ static int create_netns_dir(void)
 	return 0;
 }
 
-int system_netns_add(char *name)
+int system_netns_add(const char *name)
 {
-
     // BEGIN code taken from iproute2 ipnetns.c netns_add(), then adjusted to work here.
-
 
 	/* This function creates a new network namespace and
 	 * a new mount namespace and bind them into a well known
@@ -1574,7 +1574,6 @@ int system_netns_add(char *name)
 	 * a new /etc/resolv.conf can be shared between users.
 	 */
 	char netns_path[PATH_MAX], proc_path[PATH_MAX];
-	const char *name;
 	int fd;
 	int lock;
 	int made_netns_run_dir_mount = 0;
