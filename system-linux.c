@@ -1558,9 +1558,58 @@ static int create_netns_dir(void)
 	return 0;
 }
 
+static int saved_netns = -1;
+
+/* Obtain a FD for the current namespace, so we can reenter it later */
+static void netns_save(void)
+{
+	if (saved_netns != -1)
+		return;
+
+	saved_netns = open("/proc/self/ns/net", O_RDONLY | O_CLOEXEC);
+	if (saved_netns == -1) {
+		D(SYSTEM, "Cannot open init namespace: %s", strerror(errno));
+		exit(1);
+	}
+}
+
+static void netns_restore(void)
+{
+	if (saved_netns == -1)
+		return;
+
+	if (setns(saved_netns, CLONE_NEWNET)) {
+		D(SYSTEM, "Failed to restore netns: %s", strerror(errno));
+		exit(1);
+	}
+
+	close(saved_netns);
+	saved_netns = -1;
+}
+
+static int netns_delete(const char *nsname)
+{
+	// inlined code from on_netns_del here
+
+	char netns_path[PATH_MAX];
+
+	snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, nsname);
+	umount2(netns_path, MNT_DETACH);
+	if (unlink(netns_path) < 0) {
+		D(SYSTEM, "Cannot remove namespace file \"%s\": %s\n",
+			netns_path, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+
+// END helper functions taken from iproute2
+
+
 int system_netns_add(const char *name)
 {
-    // BEGIN code taken from iproute2 ipnetns.c netns_add(), then adjusted to work here.
+
+// BEGIN code taken from iproute2 ipnetns.c netns_add(), then adjusted to work here.
 
 	/* This function creates a new network namespace and
 	 * a new mount namespace and bind them into a well known
@@ -1665,10 +1714,10 @@ int system_netns_add(const char *name)
 	return 0;
 out_delete:
 	netns_restore();
-	netns_delete(argc, argv);
+	netns_delete(name);
 	return -1;
-}
-    // END code taken from iproute2 ipnetns.c
+
+// END code taken from iproute2 ipnetns.c
 	
 }
 
