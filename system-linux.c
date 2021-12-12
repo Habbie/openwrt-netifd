@@ -1721,11 +1721,6 @@ out_delete:
 	
 }
 
-int system_netns_del(char *nsname)
-{
-
-}
-
 int system_veth_add(struct device *veth, struct veth_config *cfg)
 {
 	struct nl_msg *msg;
