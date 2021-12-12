@@ -905,7 +905,8 @@ interface_alloc(const char *name, struct blob_attr *config, bool dynamic)
 	if ((cur = tb[IFACE_ATTR_NETNS])) {
 		iface->netns = strdup(blobmsg_get_string(cur));
 		netifd_log_message(L_CRIT, "Got netns: %s (%s)\n", iface->netns, name);
-		system_netns_add(iface->netns); // FIXME: this line is in the wrong place
+		int ret = system_netns_add(iface->netns); // FIXME: this line is in the wrong place
+		netifd_log_message(L_CRIT, "system_netns_add returned: %d\n", ret);
 	}
 
 	if ((cur = tb[IFACE_ATTR_IP4TABLE])) {
